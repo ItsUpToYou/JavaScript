@@ -2,16 +2,17 @@ const grid = document.querySelector('.grid')
 const scoreDislay = document.querySelector('#score')
 const blockWidth = 100;
 const blockHeight = 20;
+const ballDiameter = 20;
 const boardWidth = 560;
 const boardHeight = 300;
-const userStart = [230, 10];
 
+const userStart = [230, 10];
 let currentPosition = userStart;
-const ballDiameter = 20;
 
 const ballStartPosition = [270, 40];
 let currentBallPosition = ballStartPosition;
 
+let score = 0;
 let timerId;
 let xDirection = -2;
 let yDirection = 2;
@@ -113,21 +114,56 @@ function movieBall() {
     checkForCollisions()
 }
 
-timerId = setInterval(movieBall, 16);
+timerId = setInterval(movieBall, 14);
 
 //check for collisions
 function checkForCollisions() {
+    //check for block collision
+    for (let i = 0; i < blocks.length; i++) {
+        if ((currentBallPosition[0] > blocks[i].bottomLeft[0] &&
+            currentBallPosition[0] < blocks[i].bottomRight[0] &&
+            ((currentBallPosition[1] + ballDiameter) > blocks[i].bottomLeft[1])
+            && currentBallPosition[1] < blocks[i].topLeft[1]
+        )) {
+            const allBlocks = Array.from(document.querySelectorAll('.block'));
+            allBlocks[i].classList.remove('block');
+            blocks.splice(i,1)
+            changeDirection()
+            score++;
+            scoreDislay.innerHTML = score;
+
+            //check for win
+
+            if (blocks.length === 0) {
+                scoreDislay.innerHTML = "YOU WIN";
+                clearInterval(timerId);
+                document.removeEventListener('keydown', moveUser)
+            }
+        }
+    }
+
+
+
+
     //check for wall collisions
     if (currentBallPosition[0] >= (boardWidth - ballDiameter) ||
         currentBallPosition[1] >= (boardHeight - ballDiameter) ||
         currentBallPosition[0] <= 0) {
         changeDirection();
     }
+    //check for user collisions
+    if (currentBallPosition[0] > currentPosition[0] &&
+        currentBallPosition[0] < currentPosition[0] + blockWidth &&
+        (currentBallPosition[1] > currentPosition[1] && currentBallPosition[1] < currentPosition[1] + blockHeight)) {
+        changeDirection()
+    }
+
+
     //check for game over
     if (currentBallPosition[1] <= 0) {
-        clearInterval(timerId)
+        clearInterval(timerId);
         scoreDislay.innerHTML = 'You lose';
-        document.removeEventListener('keydown', moveUser)
+        document.removeEventListener('keydown', moveUser);
     }
 }
 
