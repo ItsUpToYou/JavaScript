@@ -79,17 +79,76 @@ const spin = () => {
             symbols.push(symbol)
         }
     }
-    const reels = [[], [], []];
+    const reels = [];
     for (let i = 0; i < COLS; i++) {
-        for (let j = 0; j < COLS; j++) {
-
-
+        reels.push([]);
+        const reelSymbols = [...symbols];
+        for (let j = 0; j < ROWS; j++) {
+            const randIndex = Math.floor(Math.random() * reelSymbols.length);
+            const selectedSymbols = reelSymbols[randIndex];
+            reels[i].push(selectedSymbols);
+            reelSymbols.splice(randIndex, 1);
         }
+    }
+    return reels;
+}
+
+//4.Spin the slot machine
+const transpose = (reels) => {
+    const rows = [];
+    for (let i = 0; i < ROWS; i++) {
+        rows.push([]);
+        for (let j = 0; j < COLS; j++) {
+            rows[i].push(reels[j][i]);
+        }
+    }
+
+    return rows;
+}
+
+printRows = (rows) => {
+    for (const row of rows) {
+        let rowString = "";
+        for (const [i, symbol] of row.entries()) {
+            rowString += symbol;
+            if (i != row.length - 1) {
+                rowString += " | "
+            }
+        }
+        console.log(rowString);
     }
 }
 
-spin();
+//5.Check if the user won
+const getWinning = (rows,bet,lines) => {
+    let winnings = 0;
+    for (let row = 0; row < lines; row++) {
+        const symbols = rows[row];
+        let allSame = true;
+
+        for (const symbol of symbols) {
+            if (symbol != symbols[0]) {
+                allSame = false;
+                break;
+            }
+        }
+        if (allSame) {
+            winnings += bet * SYMBOL_VALUES[symbols[0]];
+        }
+    }
+    return winnings;
+}
+
+
+//6.Give the user their winnings
+
+
 
 let balance = deposit();
 const numberOfLines = getNumberOfLines();
 const bet = getBet(balance, numberOfLines);
+const reels = spin();
+const rows = transpose(reels);
+printRows(rows)
+const winnings = getWinning(rows, bet, numberOfLines);
+console.log('You won $' + winnings.toString() )
